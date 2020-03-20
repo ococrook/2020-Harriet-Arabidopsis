@@ -92,3 +92,7 @@ arabidposis_pbs <- normalise(object = arabidposis_pbs, method = "center.median")
 
 par(mfrow = c(3,4))
 fitGP(arabidposis_pbs)
+
+mcmcco3rep1 <- tagmMapTrain(arabidposis_co3rep1)
+arabidposis_co3rep1 <- tagmMapPredict(arabidposis_co3rep1, mcmcco3rep1)
+
