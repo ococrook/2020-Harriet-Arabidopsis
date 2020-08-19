@@ -1,10 +1,13 @@
-
+require(MSnbase)
+require(pRoloc)
 
 csv <- "../RawData/HyperLOPIT_PBS_recon_zeros.csv"
 csvMarkers1 <- "../RawData/arabidopsis_organelle_markers.csv"
 csvMarkers2 <- "../RawData/arabidopsis_suborganelle_ribosomes_markers.csv"
 
 csv2 <- "../RawData/HyperLOPIT_CO3_recon_zeros.csv"
+
+setwd("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/code")
 
 arabidposis_pbs <- readMSnSet2(csv, ecol = 3:46, fnames = 2)
 arabidposis_co3 <- readMSnSet2(csv2, ecol = 3:42, fnames = 2)
@@ -15,7 +18,7 @@ arabidposis_pbs <- addMarkers(object = arabidposis_pbs, markers = csvMarkers2, m
 arabidposis_co3 <- addMarkers(object = arabidposis_co3, markers = csvMarkers1)
 arabidposis_co3 <- addMarkers(object = arabidposis_co3, markers = csvMarkers2, mcol = "markers2")
 
-
+setwd("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData")
 arabidposis_pbsrep1 <- readMSnSet2("LOPIT_PBS_r1_recon_zeros.csv", ecol = 3:13, fnames = 2)
 arabidposis_pbsrep2 <- readMSnSet2("LOPIT_PBS_r2_recon_zeros.csv", ecol = 3:13, fnames = 2)
 arabidposis_pbsrep3 <- readMSnSet2("LOPIT_PBS_r3_recon_zeros.csv", ecol = 3:13, fnames = 2)
@@ -66,6 +69,22 @@ for (j in seq_along(getMarkerClasses(arabidposis_pbs, fcol = "markers2"))) {
   matplot(t(exprs(arabidposis_pbs[fData(arabidposis_pbs)$markers2 == getMarkerClasses(arabidposis_pbs, fcol = "markers2")[j], ])),
          lty = 1, col  = getStockcol()[j], type = "l", ylab = paste0(getMarkerClasses(arabidposis_pbs,  fcol = "markers2")[j]))
 }
+
+
+save(arabidposis_co3, file = "arabidposis_co3.rda")
+save(arabidposis_co3rep1, file = "arabidposis_co3rep1.rda")
+save(arabidposis_co3rep2, file = "arabidposis_co3rep2.rda")
+save(arabidposis_co3rep3, file = "arabidposis_co3rep3.rda")
+save(arabidposis_co3rep4, file = "arabidposis_co3rep4.rda")
+save(arabidposis_pbs, file = "arabidposis_pbs.rda")
+save(arabidposis_pbsrep1, file = "arabidposis_pbsrep1.rda")
+save(arabidposis_pbsrep2, file = "arabidposis_pbsrep2.rda")
+save(arabidposis_pbsrep3, file = "arabidposis_pbsrep3.rda")
+save(arabidposis_pbsrep4, file = "arabidposis_pbsrep4.rda")
+
+
+
+
 
 
 require(MSnbase)

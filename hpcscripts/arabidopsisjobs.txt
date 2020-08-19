@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#SBATCH -J arabidopsis
+#SBATCH -p skylake-himem
+#SBATCH -A mrc-bsu-sl2-cpu
+#SBATCH -N 1
+#SBATCH -c 9
+#SBATCH -t 20:0:0
+#SBATCH --mail-type=END,FAIL
+#SBATCH --array=0-19
+
+module load r-3.6.1-gcc-5.4.0-zrytncq 
+
+
+RScript araCO3.R
+RScript araCO3_markers2.R
+RScript araCO3rep1.R
+RScript araCO3rep1_markers2.R
+RScript araCO3rep2.R
+RScript araCO3rep2_markers2.R
+RScript araCO3rep3.R
+RScript araCO3rep3_markers2.R
+RScript araCO3rep4.R
+RScript araCO3rep4_markers2.R
+RScript araPBS.R
+RScript araPBS_markers2.R
+RScript araPBSrep1.R
+RScript araPBSrep1_markers2.R
+RScript araPBSrep2.R
+RScript araPBSrep2_markers2.R
+RScript araPBSrep3.R
+RScript araPBSrep3_markers2.R
+RScript araPBSrep4.R
+RScript araPBSrep4_markers2.R
