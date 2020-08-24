@@ -1,0 +1,1322 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r,}
+require(pRoloc)
+require(pRolocdata)
+setStockcol(paste0(getStockcol(), 90))
+myBlues <- colorRampPalette(RColorBrewer::brewer.pal(9,"Blues"))(100)
+set.seed(1)
+```
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbsrep1.rda")
+arab_psb_rep1_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbsrep1.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbsrep1)$markers[fData(arabidposis_pbsrep1)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbsrep1, grid = FALSE)
+addLegend(arabidposis_pbsrep1, where = "topleft", cex = 0.7, ncol = 2)
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_rep1_params)
+lapply(out, plot)
+
+```
+checking convergence
+```{r,}
+require(coda)
+araprbsrep1diag <- gelman.diag(out[c(2,3,4)])
+araprbsrep1diag
+arab_psb_rep1_params_conv <- arab_psb_rep1_params[c(2,3,4)]
+```
+```{r,}
+arab_psb_rep1_params_conv <- tagmMcmcProcess(arab_psb_rep1_params_conv)
+arabidposis_pbsrep1 <- tagmPredict(object = arabidposis_pbsrep1, params = arab_psb_rep1_params_conv)
+
+```
+
+```{r,}
+save(arab_psb_rep1_params_conv, file = "arab_psb_rep1_params_conv.rda")
+save(arabidposis_pbsrep1, file = "arabidposis_pbsrep_tagm.rda")
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbsrep1, fcol = "tagm.mcmc.allocation",
+        cex = exp(fData(arabidposis_pbsrep1)$tagm.mcmc.probability) - 1,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep1, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbsrep1, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep1)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep1, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbsrep1.rda")
+arab_psb_rep1__markers2_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbsrep1_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbsrep1)$markers2[fData(arabidposis_pbsrep1)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbsrep1, grid = FALSE, fcol = "markers2")
+addLegend(arabidposis_pbsrep1, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers2")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_rep1__markers2_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_rep1__markers2_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out, transform = FALSE)
+
+```
+```{r,}
+arab_psb_rep1__markers2_params_pooled <- mcmc_pool_chains(arab_psb_rep1__markers2_params)
+arab_psb_rep1__markers2_params_pooled
+
+```
+
+
+```{r,}
+arab_psb_rep1__markers2_params_pooled <- tagmMcmcProcess(arab_psb_rep1__markers2_params_pooled)
+arab_psb_rep1__markers2_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbsrep1 <- tagmPredict(object = arabidposis_pbsrep1,
+                           params = arab_psb_rep1__markers2_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_pbsrep1))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbsrep1, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep1)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep1, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbsrep1, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep1)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep1, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_rep1__markers2_params_pooled, file = "arab_psb_rep1__markers2_params_pooled.rda")
+save(arabidposis_pbsrep1, file = "arabidposis_pbsrep1_markers_tagm.rda")
+```
+
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbsrep2.rda")
+arab_psb_rep2_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbsrep2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbsrep2)$markers[fData(arabidposis_pbsrep2)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbsrep2, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_pbsrep2, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_rep2_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_rep2_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(1,2,3)], transform = FALSE)
+
+```
+```{r,}
+arab_psb_rep2_params_pooled <- mcmc_pool_chains(arab_psb_rep2_params[c(1,2,3)])
+arab_psb_rep2_params_pooled
+
+```
+
+
+```{r,}
+arab_psb_rep2_params_pooled <- tagmMcmcProcess(arab_psb_rep2_params_pooled)
+arab_psb_rep2_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbsrep2 <- tagmPredict(object = arabidposis_pbsrep2,
+                           params = arab_psb_rep2_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers")
+head(fData(arabidposis_pbsrep2))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbsrep2, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep2)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep2, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbsrep2, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep2)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep2, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_rep2_params_pooled, file = "arab_psb_rep2_params_pooled.rda")
+save(arabidposis_pbsrep2, file = "arabidposis_pbsrep2_tagm.rda")
+```
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbsrep2.rda")
+arab_psb_rep2_params_markers2 <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbsrep2_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbsrep2)$markers2[fData(arabidposis_pbsrep2)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbsrep2, grid = FALSE, fcol = "markers2")
+addLegend(arabidposis_pbsrep2, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_rep2_params_markers2)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_rep2_params_markers2)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(1,2,4)], transform = FALSE)
+
+```
+```{r,}
+arab_psb_rep2_params_markers2_pooled <- mcmc_pool_chains(arab_psb_rep2_params_markers2[c(1,2,3)])
+arab_psb_rep2_params_markers2_pooled
+
+```
+
+
+```{r,}
+arab_psb_rep2_params_markers2_pooled <- tagmMcmcProcess(arab_psb_rep2_params_markers2_pooled)
+arab_psb_rep2_params_markers2_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbsrep2 <- tagmPredict(object = arabidposis_pbsrep2,
+                           params = arab_psb_rep2_params_markers2_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_pbsrep2))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbsrep2, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep2)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep2, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbsrep2, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep2)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep2, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_rep2_params_pooled, file = "arab_psb_rep2_params_markers2_pooled.rda")
+save(arabidposis_pbsrep2, file = "arabidposis_pbsrep2_markers2_tagm.rda")
+```
+
+# Pbs rep 3
+
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbsrep3.rda")
+arab_psb_rep3_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbsrep3.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbsrep3)$markers[fData(arabidposis_pbsrep3)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbsrep3, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_pbsrep3, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_rep3_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_rep3_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(2,3)], transform = FALSE)
+
+```
+```{r,}
+arab_psb_rep3_params_pooled <- mcmc_pool_chains(arab_psb_rep3_params[c(2,3)])
+arab_psb_rep3_params_pooled
+
+```
+
+
+```{r,}
+arab_psb_rep3_params_pooled <- tagmMcmcProcess(arab_psb_rep3_params_pooled)
+arab_psb_rep3_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbsrep3 <- tagmPredict(object = arabidposis_pbsrep3,
+                           params = arab_psb_rep3_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers")
+head(fData(arabidposis_pbsrep3))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbsrep3, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep3)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep3, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbsrep3, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep3)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep3, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_rep3_params_pooled, file = "arab_psb_rep3_params_pooled.rda")
+save(arabidposis_pbsrep3, file = "arabidposis_pbsrep3_tagm.rda")
+```
+
+# Pbs rep 3 markers 2
+
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbsrep3.rda")
+arab_psb_rep3_markers2_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbsrep3_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbsrep3)$markers2[fData(arabidposis_pbsrep3)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbsrep3, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_pbsrep3, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers2")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_rep3_markers2_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_rep3_markers2_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(3,4)], transform = FALSE)
+
+```
+```{r,}
+arab_psb_rep3_markers2_params_pooled <- mcmc_pool_chains(arab_psb_rep3_markers2_params[c(3,4)])
+arab_psb_rep3_markers2_params_pooled
+
+```
+
+
+```{r,}
+arab_psb_rep3_markers2_params_pooled <- tagmMcmcProcess(arab_psb_rep3_markers2_params_pooled)
+arab_psb_rep3_markers2_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbsrep3 <- tagmPredict(object = arabidposis_pbsrep3,
+                           params = arab_psb_rep3_markers2_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_pbsrep3))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbsrep3, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep3)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep3, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbsrep3, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep3)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep3, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_rep3_markers2_params_pooled, file = "arab_psb_rep3_markers2_params_pooled.rda")
+save(arabidposis_pbsrep3, file = "arabidposis_pbsrep3_markers2_tagm.rda")
+```
+
+
+# Pbs rep 4
+
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbsrep4.rda")
+arab_psb_rep4_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbsrep4.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbsrep4)$markers[fData(arabidposis_pbsrep4)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbsrep4, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_pbsrep4, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_rep4_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_rep4_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(1,2)], transform = FALSE)
+
+```
+```{r,}
+arab_psb_rep4_params_pooled <- mcmc_pool_chains(arab_psb_rep4_params[c(1,2)])
+arab_psb_rep4_params_pooled
+
+```
+
+
+```{r,}
+arab_psb_rep4_params_pooled <- tagmMcmcProcess(arab_psb_rep4_params_pooled)
+arab_psb_rep4_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbsrep4 <- tagmPredict(object = arabidposis_pbsrep4,
+                           params = arab_psb_rep4_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers")
+head(fData(arabidposis_pbsrep4))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbsrep4, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep4)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep4, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbsrep4, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep4)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep4, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_rep4_params_pooled, file = "arab_psb_rep4_pooled.rda")
+save(arabidposis_pbsrep4, file = "arabidposis_pbsrep4_tagm.rda")
+```
+
+# arabidopsis pbs rep 4 markers2
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbsrep4.rda")
+arab_psb_rep4_params_markers2 <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbsrep4_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbsrep4)$markers2[fData(arabidposis_pbsrep4)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbsrep4, grid = FALSE, fcol = "markers2")
+addLegend(arabidposis_pbsrep4, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers2")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_rep4_params_markers2)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_rep4_params_markers2)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(3,4)], transform = FALSE)
+
+```
+```{r,}
+arab_psb_rep4_params_markers2_pooled <- mcmc_pool_chains(arab_psb_rep4_params_markers2[c(3,4)])
+arab_psb_rep4_params_markers2_pooled
+
+```
+
+
+```{r,}
+arab_psb_rep4_params_markers2_pooled <- tagmMcmcProcess(arab_psb_rep4_params_markers2_pooled)
+arab_psb_rep4_params_markers2_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbsrep4 <- tagmPredict(object = arabidposis_pbsrep4,
+                           params = arab_psb_rep4_params_markers2_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_pbsrep4))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbsrep4, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep4)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep4, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbsrep4, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbsrep4)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep4, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_rep4_params_markers2_pooled, file = "arab_psb_rep4_params_markers2_pooled.rda")
+save(arabidposis_pbsrep4, file = "arabidposis_pbsrep4_markers2_tagm.rda")
+```
+
+
+# PBS combined replicates
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbs.rda")
+arab_psb_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbs.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbs)$markers[fData(arabidposis_pbs)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbs, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_pbsrep4, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(1,2,3,4)], transform = FALSE)
+
+```
+```{r,}
+arab_psb_params_pooled <- mcmc_pool_chains(arab_psb_params[c(1,2,3,4)])
+arab_psb_params_pooled
+
+```
+
+
+```{r,}
+arab_psb_params_pooled <- tagmMcmcProcess(arab_psb_params_pooled)
+arab_psb_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbs <- tagmPredict(object = arabidposis_pbs,
+                           params = arab_psb_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers")
+head(fData(arabidposis_pbs))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbs, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbs)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep4, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbs, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbs)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep4, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_params_pooled, file = "arab_psb_params_pooled.rda")
+save(arabidposis_pbs, file = "arabidposis_pbs_tagm.rda")
+```
+
+## Pbs combined markers2
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_pbs.rda")
+arab_psb_params_markers2 <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_pbs_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_pbs)$markers2[fData(arabidposis_pbs)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_pbs, grid = FALSE, fcol = "markers2")
+addLegend(arabidposis_pbs, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers2")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_psb_params_markers2)
+
+```
+
+
+```{r,}
+nChains <- length(arab_psb_params_markers2)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(2,3)], transform = FALSE)
+
+```
+```{r,}
+arab_psb_params_markers2_pooled <- mcmc_pool_chains(arab_psb_params_markers2[c(2,3)])
+arab_psb_params_markers2_pooled
+
+```
+
+
+```{r,}
+arab_psb_params_markers2_pooled <- tagmMcmcProcess(arab_psb_params_markers2_pooled)
+arab_psb_params_markers2_pooled
+
+```
+
+
+```{r,}
+arabidposis_pbs <- tagmPredict(object = arabidposis_pbs,
+                           params = arab_psb_params_markers2_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_pbs))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_pbs, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbs)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep4, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_pbs, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_pbs)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep4, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_psb_params_markers2_pooled, file = "arab_psb_params_markers2_pooled.rda")
+save(arabidposis_pbs, file = "arabidposis_pbs_markers2_tagm.rda")
+```
+
+
+# CO3 rep 1
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_co3rep1.rda")
+arab_co3rep1_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_co3rep1.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_co3rep1)$markers[fData(arabidposis_co3rep1)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_co3rep1, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_co3rep1, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_co3rep1_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_co3rep1_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(2,3)], transform = FALSE)
+
+```
+```{r,}
+arab_co3rep1_params_pooled <- mcmc_pool_chains(arab_co3rep1_params[c(2,3)])
+arab_co3rep1_params_pooled
+
+```
+
+
+```{r,}
+arab_co3rep1_params_pooled <- tagmMcmcProcess(arab_co3rep1_params_pooled)
+arab_co3rep1_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_co3rep1 <- tagmPredict(object = arabidposis_co3rep1,
+                           params = arab_co3rep1_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers")
+head(fData(arabidposis_co3rep1))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_co3rep1, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep1)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_pbsrep4, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_co3rep1, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep1)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_pbsrep4, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_co3rep1_params_pooled, file = "arab_co3rep1_params_pooled.rda")
+save(arabidposis_co3rep1, file = "arabidposis_co3rep1_tagm.rda")
+```
+
+
+# CO3 rep 1 marker2
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_co3rep1.rda")
+arab_co3rep1_marker2_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_co3rep1_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_co3rep1)$markers2[fData(arabidposis_co3rep1)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_co3rep1, grid = FALSE, fcol = "markers2")
+addLegend(arabidposis_co3rep1, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers2")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_co3rep1_marker2_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_co3rep1_marker2_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(2,3,4)], transform = FALSE)
+
+```
+```{r,}
+arab_co3rep1_marker2_params_pooled <- mcmc_pool_chains(arab_co3rep1_marker2_params[c(2,3,4)])
+arab_co3rep1_marker2_params_pooled
+
+```
+
+
+```{r,}
+arab_co3rep1_marker2_params_pooled <- tagmMcmcProcess(arab_co3rep1_marker2_params_pooled)
+arab_co3rep1_marker2_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_co3rep1 <- tagmPredict(object = arabidposis_co3rep1,
+                           params = arab_co3rep1_marker2_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_co3rep1))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_co3rep1, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep1)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_co3rep1, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_co3rep1, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep1)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_co3rep1, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_co3rep1_marker2_params_pooled, file = "arab_co3rep1_marker2_params_pooled.rda")
+save(arabidposis_co3rep1, file = "arabidposis_co3rep1_markers2_tagm.rda")
+```
+
+# co3 rep2 
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_co3rep2.rda")
+arab_co3rep2_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_co3rep2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_co3rep2)$markers[fData(arabidposis_co3rep2)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_co3rep2, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_co3rep2, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_co3rep2_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_co3rep2_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(1,2)], transform = FALSE)
+
+```
+```{r,}
+arab_co3rep2_params_pooled <- mcmc_pool_chains(arab_co3rep2_params[c(1,2)])
+arab_co3rep2_params_pooled
+
+```
+
+
+```{r,}
+arab_co3rep2_params_pooled <- tagmMcmcProcess(arab_co3rep2_params_pooled)
+arab_co3rep2_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_co3rep2 <- tagmPredict(object = arabidposis_co3rep2,
+                           params = arab_co3rep2_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers")
+head(fData(arabidposis_co3rep2))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_co3rep2, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep2)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_co3rep2, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_co3rep2, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep2)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_co3rep2, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_co3rep2_params_pooled, file = "arab_co3rep2_params_pooled.rda")
+save(arabidposis_co3rep2, file = "arabidposis_co3rep2_tagm.rda")
+```
+
+
+# CO3 rep 2 markers2
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_co3rep2.rda")
+arab_co3rep2_markers2_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_co3rep2_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_co3rep2)$markers2[fData(arabidposis_co3rep2)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_co3rep2, grid = FALSE, fcol = "markers2")
+addLegend(arabidposis_co3rep2, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers2")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_co3rep2_markers2_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_co3rep2_markers2_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(2,3)], transform = FALSE)
+
+```
+```{r,}
+arab_co3rep2_markers2_params_pooled <- mcmc_pool_chains(arab_co3rep2_markers2_params[c(2,3)])
+arab_co3rep2_markers2_params_pooled
+
+```
+
+
+```{r,}
+arab_co3rep2_markers2_params_pooled <- tagmMcmcProcess(arab_co3rep2_markers2_params_pooled)
+arab_co3rep2_markers2_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_co3rep2 <- tagmPredict(object = arabidposis_co3rep2,
+                           params = arab_co3rep2_markers2_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_co3rep2))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_co3rep2, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep2)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_co3rep2, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_co3rep2, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep2)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_co3rep2, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_co3rep2_markers2_params_pooled, file = "arab_co3rep2_markers2_params_pooled.rda")
+save(arabidposis_co3rep2, file = "arabidposis_co3rep2_markers2_tagm.rda")
+```
+
+
+# CO3 rep 3
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_co3rep3.rda")
+arab_co3rep3_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_co3rep3.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_co3rep3)$markers[fData(arabidposis_co3rep3)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_co3rep3, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_co3rep3, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_co3rep3_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_co3rep3_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(2,3)], transform = FALSE)
+
+```
+```{r,}
+arab_co3rep3_params_pooled <- mcmc_pool_chains(arab_co3rep3_params[c(2,3)])
+arab_co3rep3_params_pooled
+
+```
+
+
+```{r,}
+arab_co3rep3_params_pooled <- tagmMcmcProcess(arab_co3rep3_params_pooled)
+arab_co3rep3_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_co3rep3 <- tagmPredict(object = arabidposis_co3rep3,
+                           params = arab_co3rep3_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers")
+head(fData(arabidposis_co3rep3))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_co3rep3, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep3)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_co3rep3, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_co3rep3, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep3)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_co3rep2, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_co3rep3_params_pooled, file = "arab_co3rep3_params_pooled.rda")
+save(arabidposis_co3rep3, file = "arabidposis_co3rep3_tagm.rda")
+```
+
+# Co3 rep3 markers 2
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_co3rep3.rda")
+arab_co3rep3_markers2_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_co3rep3_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_co3rep3)$markers2[fData(arabidposis_co3rep3)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_co3rep3, grid = FALSE, fcol = "markers2")
+addLegend(arabidposis_co3rep3, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers2")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_co3rep3_markers2_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_co3rep3_markers2_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(2,3)], transform = FALSE)
+
+```
+```{r,}
+arab_co3rep3_markers2_params_pooled <- mcmc_pool_chains(arab_co3rep3_markers2_params[c(2,3)])
+arab_co3rep3_markers2_params_pooled
+
+```
+
+
+```{r,}
+arab_co3rep3_markers2_params_pooled <- tagmMcmcProcess(arab_co3rep3_markers2_params_pooled)
+arab_co3rep3_markers2_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_co3rep3 <- tagmPredict(object = arabidposis_co3rep3,
+                           params = arab_co3rep3_markers2_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_co3rep3))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_co3rep3, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep3)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_co3rep3, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_co3rep3, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep3)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_co3rep2, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save( arab_co3rep3_markers2_params_pooled, file = " arab_co3rep3_markers2_params_pooled.rda")
+save(arabidposis_co3rep3, file = "arabidposis_co3rep3_markers2_tagm.rda")
+```
+
+# co3 rep 4
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_co3rep4.rda")
+arab_co3rep4_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_co3rep4.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_co3rep4)$markers[fData(arabidposis_co3rep4)$markers %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_co3rep4, grid = FALSE, fcol = "markers")
+addLegend(arabidposis_co3rep4, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_co3rep4_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_co3rep4_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(1,2)], transform = FALSE)
+
+```
+```{r,}
+arab_co3rep4_params_pooled <- mcmc_pool_chains(arab_co3rep4_params[c(1,2)])
+arab_co3rep4_params_pooled
+
+```
+
+
+```{r,}
+arab_co3rep4_params_pooled <- tagmMcmcProcess(arab_co3rep4_params_pooled)
+arab_co3rep4_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_co3rep4 <- tagmPredict(object = arabidposis_co3rep4,
+                           params = arab_co3rep4_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers")
+head(fData(arabidposis_co3rep4))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_co3rep4, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep4)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_co3rep4, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_co3rep4, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep4)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_co3rep4, fcol = "markers",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save( arab_co3rep4_params_pooled, file = " arab_co3rep4_params_pooled.rda")
+save(arabidposis_co3rep4, file = "arabidposis_co3rep4_tagm.rda")
+```
+
+
+# Co3 rep 4 markers 2
+
+```{r,}
+load("C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/arabidposis_co3rep4.rda")
+arab_co3rep4_markers2_params <- readRDS(file = "C:/Users/OllyC/Desktop/2019-LOPIT-Projects/2020-Harriet-Arabidopsis-/RawData/mcmc_arabidposis_co3rep4_markers2.rds")
+```
+
+#intial visualisation
+```{r,}
+fData(arabidposis_co3rep4)$markers2[fData(arabidposis_co3rep4)$markers2 %in% c("cytosolic ribosomes", "extracellular")] <- "unknown"
+plot2D(arabidposis_co3rep4, grid = FALSE, fcol = "markers2")
+addLegend(arabidposis_co3rep4, where = "topleft", cex = 0.7, ncol = 2, fcol = "markers2")
+```
+```{r,}
+out <- mcmc_get_outliers(arab_co3rep4_markers2_params)
+
+```
+
+
+```{r,}
+nChains <- length(arab_co3rep4_markers2_params)
+nChains
+for (i in seq_len(nChains))
+    plot(out[[i]], main = paste("Chain", i), auto.layout = FALSE, col = i)
+
+```
+```{r,}
+gelman.diag(out[c(2,3,4)], transform = FALSE)
+
+```
+```{r,}
+arab_co3rep4_markers2_params_pooled <- mcmc_pool_chains(arab_co3rep4_markers2_params[c(2,3,4)])
+arab_co3rep4_markers2_params_pooled
+
+```
+
+
+```{r,}
+arab_co3rep4_markers2_params_pooled <- tagmMcmcProcess(arab_co3rep4_markers2_params_pooled)
+arab_co3rep4_markers2_params_pooled
+
+```
+
+
+```{r,}
+arabidposis_co3rep4 <- tagmPredict(object = arabidposis_co3rep4,
+                           params = arab_co3rep4_markers2_params_pooled,
+                           probJoint = TRUE,
+                           fcol = "markers2")
+head(fData(arabidposis_co3rep4))
+
+```
+
+```{r,}
+par(mfrow = c(1, 2))
+plot2D(arabidposis_co3rep4, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep4)$tagm.mcmc.probability,
+        main = "TAGM MCMC allocations")
+addLegend(arabidposis_co3rep4, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+plot2D(arabidposis_co3rep4, fcol = "tagm.mcmc.allocation",
+        cex = fData(arabidposis_co3rep4)$tagm.mcmc.mean.shannon,
+        main = "Visualising global uncertainty")
+addLegend(arabidposis_co3rep4, fcol = "markers2",
+           where = "topleft", ncol = 2, cex = 0.6)
+
+```
+
+```{r,}
+save(arab_co3rep4_markers2_params_pooled, file = "arab_co3rep4_markers2_params_pooled.rda")
+save(arabidposis_co3rep4, file = "arabidposis_co3rep4_markers2_tagm.rda")
+```
